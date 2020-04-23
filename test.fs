@@ -1,53 +1,25 @@
-open Test
+module Test
+
 open Parser
 
 // Interpreter
-               
+
 type 'a env = (varname * 'a) list
-let rec lookup x = function
-  | []            -> failwith ("unbound: " + x)
-  | (y, w) :: env -> if x = y then w else lookup x env
 
-let rec eval env = function
-  | INT i           -> i
-  | ADD (e1, e2)    -> eval env e1 + eval env e2
-  | VAR x           -> lookup x env
-  | LET (x, e1, e2) -> let v1 = eval env e1
-                       eval ((x, v1) :: env) e2
-  | EQ (e1, e2)     -> if eval env e1 = eval env e2 then 1 else 0
-  | IF (e1, e2, e3) -> // Exercise
+let rec lookup x =
+    function
+    | [] -> failwith ("unbound: " + x)
+    | (y, w) :: env ->
+        if x = y then w else lookup x env
 
-  // Compiler
 
-let rec varpos x = function
-  | []       -> failwith ("unbound: " + x)
-  | y :: env -> if x = y then 0 else 1 + varpos x env
-
-let mutable labelCounter = 0
-let newLabel _ =
-  let this = labelCounter
-  labelCounter <- this + 1;
-  this
-
-let rec comp env = function
-  | INT i           -> [IPUSH i]
-  | ADD (e1, e2)    -> comp env         e1 @
-                       comp ("" :: env) e2 @
-                       [IADD]
-  | EQ (e1, e2)     -> comp env         e1 @
-                       comp ("" :: env) e2 @
-                       [IEQ]
-  | VAR x           -> [IGET (varpos x env)]
-  | LET (x, e1, e2) -> comp env        e1 @
-                       comp (x :: env) e2 @
-                       [ISWAP]            @
-                       [IPOP]
-  | IF (e1, e2, e3) -> let l2 = newLabel()
-                       let le = newLabel()
-                       comp env e1  @
-                       [IJMPIF l2]  @
-                       comp  env e3 @
-                       [IJMP le]    @
-                       [ILAB l2]    @
-                       comp env e2  @
-                       [ILAB le]
+let rec eval env =
+    function
+    | INT i -> i
+    | ADD(e1, e2) -> eval env e1 + eval env e2
+    | VAR x -> lookup x env
+    | LET(x, e1, e2) ->
+        let v1 = eval env e1
+        eval ((x, v1) :: env) e2
+    | EQ(e1, e2) ->
+        if eval env e1 = eval env e2 then 1 else 0
