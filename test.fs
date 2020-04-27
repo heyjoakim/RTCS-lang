@@ -1,6 +1,9 @@
 module Test
 
 open Parser
+// #r "parser.dll";;
+// #load "test.fs";;
+// open Test;; and Parser;;
 
 // Interpreter
 type 'a env = (varname * 'a) list
@@ -17,7 +20,7 @@ let rec eval env =
     | INT i -> i
     | ADD(e1, e2) -> eval env e1 + eval env e2
     | VAR x -> lookup x env
-    | LET(x, e1, e2) ->yc
+    | LET(x, e1, e2) ->
         let v1 = eval env e1
         eval ((x, v1) :: env) e2
     | EQ(e1, e2) ->
