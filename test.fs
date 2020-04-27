@@ -3,7 +3,6 @@ module Test
 open Parser
 
 // Interpreter
-
 type 'a env = (varname * 'a) list
 
 let rec lookup x =
@@ -18,7 +17,7 @@ let rec eval env =
     | INT i -> i
     | ADD(e1, e2) -> eval env e1 + eval env e2
     | VAR x -> lookup x env
-    | LET(x, e1, e2) ->
+    | LET(x, e1, e2) ->yc
         let v1 = eval env e1
         eval ((x, v1) :: env) e2
     | EQ(e1, e2) ->
