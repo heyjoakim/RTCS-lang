@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/hey/git/RTCS-lang/RTCS-lang.fsproj": {}
+    "/home/hey/git/RTCS-lang/src/App/App.fsproj": {}
   },
   "projects": {
-    "/home/hey/git/RTCS-lang/RTCS-lang.fsproj": {
+    "/home/hey/git/RTCS-lang/src/App/App.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/hey/git/RTCS-lang/RTCS-lang.fsproj",
-        "projectName": "RTCS-lang",
-        "projectPath": "/home/hey/git/RTCS-lang/RTCS-lang.fsproj",
+        "projectUniqueName": "/home/hey/git/RTCS-lang/src/App/App.fsproj",
+        "projectName": "App",
+        "projectPath": "/home/hey/git/RTCS-lang/src/App/App.fsproj",
         "packagesPath": "/home/hey/.nuget/packages/",
-        "outputPath": "/home/hey/git/RTCS-lang/obj/",
+        "outputPath": "/home/hey/git/RTCS-lang/src/App/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/hey/.nuget/NuGet/NuGet.Config"
