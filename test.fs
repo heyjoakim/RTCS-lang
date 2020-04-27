@@ -1,12 +1,15 @@
 module Test
 
 open Parser
+
+
 // #r "parser.dll";;
 // #load "test.fs";;
-// open Test;; and Parser;;
+// open Test;;
+// Parser;;
 
 // Interpreter
-type 'a env = (varname * 'a) list
+type 'a env = (varname list * 'a) list
 
 let rec lookup x =
     function

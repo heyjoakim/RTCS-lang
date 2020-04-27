@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>RTCS_lang</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="RTCS-lang.fsproj">
+      <Name>RTCS-lang.fsproj</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Parser.dll" />
+    <Compile Include="vm.dll" />
+    <Compile Include="test.fs" />
+  </ItemGroup>
+</Project>
