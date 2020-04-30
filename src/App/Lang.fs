@@ -1,6 +1,9 @@
 module Lang
 
 open Parser
+open VM
+
+// #r "parser.dll", #r "vm.dll", open Parser, open VM, #load "lang.fs", open Lang.
 
 // Interpreter
 type 'a env = (varname list * 'a) list
