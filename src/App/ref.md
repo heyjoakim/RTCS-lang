@@ -8,10 +8,15 @@ eval [] (DIV (INT 10, INT 5));;
 eval [] (MUL (INT 10, INT 5));;
 eval [] (LT (INT 5, INT 10));;
 eval [] (NEQ (INT 5, INT 10));;
+eval [] (LE (INT 5, INT 10));;
+eval [] (GT (INT 5, INT 10));;
+eval [] (GT (INT 5, INT 10));;
+eval [] (GE (INT 5, INT 10));;
 
-
-
-
+## Statements
+eval [] (IF (ADD (INT 5, INT 5), INT 5, INT 99));;
 
 
 ## Assignments
+eval [] (LET ("x", INT 5, ADD (VAR "x", INT 42)));;
+eval [("x", 5)] (ADD (VAR "x", INT 42)));;
