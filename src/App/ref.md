@@ -14,7 +14,9 @@ eval [] (GT (INT 5, INT 10));;
 eval [] (GE (INT 5, INT 10));;
 
 ## Statements
-eval [] (IF (ADD (INT 5, INT 5), INT 5, INT 99));;
+eval [] (IF (EQ (INT 5, INT 5), INT 5, INT 99));;
+eval [] (AND (GT (INT 5, INT 3), (EQ (INT 5, INT 5))));;
+eval [] (OR (GT (INT 5, INT 10), (EQ (INT 5, INT 5))));;
 
 
 ## Assignments
