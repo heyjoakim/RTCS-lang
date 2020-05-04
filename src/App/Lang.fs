@@ -2,11 +2,8 @@ module Lang
 
 open Parser
 
-// #r "parser.dll", #r "vm.dll", open Parser, open VM, #load "lang.fs", open Lang.
-
 // Interpreter
 type 'a env = (varname list * 'a) list
-// func  = funcname * (varname * exp ) // pair times a pairs
 
 let rec lookup x =
     function
@@ -19,9 +16,7 @@ let evalProg (funcs, e) =
         | INT i -> i
         | ADD (e1, e2) -> eval env e1 + eval env e2
         | VAR x -> lookup x env
-        | LET (x, e1, e2) ->
-            let v1 = eval env e1
-            eval ((x, v1) :: env) e2
+        | NEG (e) -> -eval env e
         | EQ (e1, e2) -> if eval env e1 = eval env e2 then 1 else 0
         | SUB (e1, e2) -> eval env e1 - eval env e2
         | MUL (e1, e2) -> eval env e1 * eval env e2
@@ -34,10 +29,17 @@ let evalProg (funcs, e) =
         | IF (e1, e2, e3) -> if eval env e1 = 1 then eval env e2 else eval env e3
         | AND (e1, e2) -> if eval env e1 = 1 && eval env e2 = 1 then 1 else 0
         | OR (e1, e2) -> if eval env e1 = 1 || eval env e2 = 1 then 1 else 0
+        | LET (x, e1, e2) ->
+            let v1 = eval env e1
+            eval ((x, v1) :: env) e2
         | CALL (f, [ e ]) ->
             let v = eval env e
             let ([ x ], body) = lookup f funcs
             eval [ (x, v) ] body
-        | NEG (_) -> failwith "Not Implemented"
+        | CALL (f, [ e1; e2 ]) ->
+            let v1 = eval env e1
+            let v2 = eval env e2
+            let ([ x1; x2 ], body) = lookup f funcs
+            eval [ (x1, v1); (x2, v2) ] body
 
     eval [] e

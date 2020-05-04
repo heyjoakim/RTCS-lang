@@ -1,8 +1,12 @@
 # References
+// #r "parser.dll", #r "vm.dll", open Parser, open VM, #load "lang.fs", open Lang.
+// func  = funcname * (varname * exp ) // pair times a pairs
+
 
 ## Basics
 eval [] (ADD (INT 3, INT 5));;
 eval [] (SUB (INT 3, INT 5));;
+eval [] (NEG (INT 3, INT 5));;
 eval [] (EQ (INT 3, INT 5));;
 eval [] (DIV (INT 10, INT 5));;
 eval [] (MUL (INT 10, INT 5));;
