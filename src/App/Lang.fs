@@ -1,6 +1,7 @@
 module Lang
 
 open Parser
+open VM
 
 // Interpreter
 type 'a env = (varname list * 'a) list
@@ -44,6 +45,53 @@ let evalProg (funcs, e) =
 
     eval [] e
 
-// Executions
+// Compiler
+let rec varpos x =
+    function
+    | [] -> failwith ("unbound: " + x)
+    | y :: env -> if x = y then 0 else 1 + varpos x env
 
-let main s = evalProg (parseProgFromString s)
+let mutable labelCounter = 0
+
+let newLabel _ =
+    let this = labelCounter
+    labelCounter <- this + 1
+    this
+
+let rec comp env =
+    function
+    | INT i -> [ IPUSH i ]
+    | ADD (e1, e2) -> comp env e1 @ comp ("" :: env) e2 @ [ IADD ]
+    | VAR x -> [ IGET(varpos x env) ]
+    | LET (x, e1, e2) ->
+        comp env e1
+        @ comp (x :: env) e2
+        @ [ ISWAP ]
+        @ [ IPOP ]
+    | EQ (e1, e2) -> comp env e1 @ comp ("" :: env) e2 @ [ IEQ ]
+    | IF (e1, e2, e3) ->
+        let l2 = newLabel ()
+        let le = newLabel ()
+        comp env e1
+        @ [ IJMPIF l2 ]
+        @ comp env e3
+        @ [ IJMP le ]
+        @ [ ILAB l2 ]
+        @ comp env e2
+        @ [ ILAB le ]
+
+
+// Executions
+let parse s = parseProgFromString s
+
+let main s =
+    execProg (comp [] (parseExpFromString s)) [] // main"1+2" [];;
+
+let run s = evalProg (parseProgFromString s)
+
+let prog s = comp [] (parseExpFromString s)
+
+// let env = ["pi"; "bigNumber"; "a"];;
+// let c = comp env (ADD (VAR "a", INT 5));;
+// let st = [3; 1000000; 42];;
+// execProg c st;;
