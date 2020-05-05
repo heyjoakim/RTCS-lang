@@ -43,15 +43,20 @@ parseProgFromString "(if 1 then 2 else 3) +4";;
 > evalProg (parseProgFromString "func f(x) = x + x; f(7)");;
 > evalProg ([("double",(["x"], ADD (VAR "x",VAR"x")))], CALL ("double",[INT 7]));;
 > > evalProg (parseProgFromString "let x = 5 in x");;  
+> > evalProg ([], ADD(INT 3, INT 4));; // env and exp
 
 ## If (Intepreter)
 > evalProg (parseProgFromString "(if 1 then 2 else 3) +4");;
+
+## EQ (Intepreter)
+> parseProgFromString "3==4";;
+> > evalProg (parseProgFromString "3==4");;
+> > evalProg ([], EQ(INT 3, INT 3));;
 
 ## comp (Compiler)
 
 comp [] (ADD(INT 5, INT 6));;
 
-> main "1+2" [];;
 > comp [](parseExpFromString '1+2');;
 > execProg (comp [](parseExpFromString '1+2') )[];;
 >
@@ -62,5 +67,23 @@ comp [] (ADD(INT 5, INT 6));;
 > > execProg (comp [] (parseExpFromString "let x = 5 in x")) [];;
 
 ## If (Compiler)
-> parseProgFromString "(if 1 then 2 else 3) +4";;              
-> evalProg (parseProgFromString "(if 1 then 2 else 3) +4");;
+> parseExpFromString "(if 1 then 2 else 3) +4";;              
+> execProg (comp [] (parseExpFromString "(if 1 then 2 else 3) +4")) [];;
+> 
+## EQ (compiler)
+> execProg (comp [] (EQ(INT 5, INT 6))) [];;
+> > parseExpFromString "3 == 4";;
+> > execProg (comp [] (parseExpFromString "3 == 4")) [];;
+
+## CompProg (Compiler)
+
+compProg ([("f", ("x", ADD (VAR "x", INT 42))); ("g", ("y", CALL ("f", CALL ("f", VAR "y"))))], CALL ("g", INT 5));;
+
+> compProg ([], ADD (INT 3, INT 5));;
+
+
+
+// let env = ["pi"; "bigNumber"; "a"];;
+// let c = comp env (ADD (VAR "a", INT 5));;
+// let st = [3; 1000000; 42];;
+// execProg c st;;

@@ -46,11 +46,6 @@ let evalProg (funcs, e) =
     eval [] e
 
 // Compiler
-let rec varpos x =
-    function
-    | [] -> failwith ("unbound: " + x)
-    | y :: env -> if x = y then 0 else 1 + varpos x env
-
 let mutable labelCounter = 0
 
 let newLabel _ =
@@ -58,40 +53,95 @@ let newLabel _ =
     labelCounter <- this + 1
     this
 
-let rec comp env =
+let rec varpos x =
+    function
+    | [] -> failwith ("unbound: " + x)
+    | y :: env -> if x = y then 0 else 1 + varpos x env
+
+let rec comp fenv env =
     function
     | INT i -> [ IPUSH i ]
-    | ADD (e1, e2) -> comp env e1 @ comp ("" :: env) e2 @ [ IADD ]
+    | ADD (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ IADD ]
     | VAR x -> [ IGET(varpos x env) ]
     | LET (x, e1, e2) ->
-        comp env e1
-        @ comp (x :: env) e2
+        comp fenv env e1
+        @ comp fenv (x :: env) e2
         @ [ ISWAP ]
         @ [ IPOP ]
-    | EQ (e1, e2) -> comp env e1 @ comp ("" :: env) e2 @ [ IEQ ]
+    | EQ (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ IEQ ]
     | IF (e1, e2, e3) ->
         let l2 = newLabel ()
         let le = newLabel ()
-        comp env e1
+        comp fenv env e1
         @ [ IJMPIF l2 ]
-        @ comp env e3
+        @ comp fenv env e3
         @ [ IJMP le ]
         @ [ ILAB l2 ]
-        @ comp env e2
+        @ comp fenv env e2
         @ [ ILAB le ]
+    | CALL (f, [ e ]) ->
+        let lr = newLabel ()
+        let lf = lookup f fenv
+        comp fenv env e
+        @ [ ICALL lf ]
+        @ [ ILAB lr ]
+        @ [ ISWAP ]
+        @ [ IPOP ]
+
+let compProg (funcs, e1) =
+    let fenv =
+        List.map (fun (f, _) -> (f, newLabel ())) funcs
+
+    let rec compFuncs =
+        function
+        | [] -> comp fenv [] e1 @ [ IHALT ]
+        | (f, ([ x ], e)) :: funcs ->
+            let lf = lookup f fenv
+            compFuncs funcs
+            @ [ ILAB lf ]
+            @ comp fenv [ ""; x ] e
+            @ [ ISWAP ]
+            @ [ IRETN ]
+
+    compFuncs funcs
 
 
 // Executions
-let parse s = parseProgFromString s
+let e1 = ([], ADD(INT 3, INT 2))
 
-let main s =
-    execProg (comp [] (parseExpFromString s)) [] // main"1+2" [];;
+let e2 = "1+2"
 
-let run s = evalProg (parseProgFromString s)
+let f1 =
+    ([ ("f", ([ "x" ], ADD(VAR "x", INT 42))) ], CALL("f", [ INT 8 ]))
 
-let prog s = comp [] (parseExpFromString s)
+let f2 = "func f(x) = x + 42; f(8)"
 
-// let env = ["pi"; "bigNumber"; "a"];;
-// let c = comp env (ADD (VAR "a", INT 5));;
-// let st = [3; 1000000; 42];;
-// execProg c st;;
+let f3 = "func f(x,y) = x + 42 + y; f(8,4)"
+
+
+let f4 =
+    ([ ("f", ([ "x" ], ADD(VAR "x", INT 42)))
+       ("g", ([ "y" ], CALL("f", [ CALL("f", [ VAR "y" ]) ]))) ],
+     CALL("g", [ INT 5 ]))
+
+let f5 =
+    "func f(x) = x + 42; func g(y) = f(f(y)); g(5)"
+
+// Intepreter executions
+// evalProg prog
+let evalStr prog = evalProg (parseProgFromString prog)
+
+// Compiler executions
+let exec prog = execProg (compProg (prog)) []
+
+
+let execStr prog =
+    execProg (compProg (parseProgFromString (prog))) []
+
+// All is working besides the multiple args for the compiler (callArgsStr)

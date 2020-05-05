@@ -128,7 +128,8 @@ module Lexer =
             l.char <- l.char + 1
             Some c
 
-    let private makename cs = TNAME(System.String.Concat(List.map string (List.rev cs)))
+    let private makename cs =
+        TNAME(System.String.Concat(List.map string (List.rev cs)))
 
     let rec private readname (l: lexer) cs: token =
         match peekch l with
@@ -140,7 +141,8 @@ module Lexer =
             else
                 makename cs
 
-    let private makenumber cs = TINT(int (System.String.Concat(List.map string (List.rev cs))))
+    let private makenumber cs =
+        TINT(int (System.String.Concat(List.map string (List.rev cs))))
 
     let rec private readnumber (l: lexer) cs: token =
         match peekch l with
@@ -243,9 +245,11 @@ module FixityParser =
     type 'a infx = int * assoc * ('a * 'a -> 'a)
     // type 'a chunk  = pos * 'a option * 'a prefx option * 'a infx option
 
-    let private prefer_left (pr, a, _) (pr', a', _) = pr > pr' || pr = pr' && a = LEFT && a' = LEFT
+    let private prefer_left (pr, a, _) (pr', a', _) =
+        pr > pr' || pr = pr' && a = LEFT && a' = LEFT
 
-    let private prefer_right (pr, a, _) (pr', a', _) = pr' > pr || pr = pr' && a = RIGHT && a' = RIGHT
+    let private prefer_right (pr, a, _) (pr', a', _) =
+        pr' > pr || pr = pr' && a = RIGHT && a' = RIGHT
 
     // Parser stack:
     type private 'a stack =
@@ -259,7 +263,7 @@ module FixityParser =
     let rec private reduce_stack st e =
         match st with
         | NIL -> e
-        | FRAME(st, ps, e', (_, _, make)) ->
+        | FRAME (st, ps, e', (_, _, make)) ->
             // If ps = p :: ..., then prec(s) > prec(p), since otherwise we
             // would have reduced p(e').  We reduce s(e', e) first, and then
             // reduce all prefixes afterwards.
@@ -267,6 +271,7 @@ module FixityParser =
                 match st with
                 | [] -> e'
                 | (_, make) :: ps -> loop ps (make e')
+
             reduce_stack st (loop ps (make (e', e)))
 
     // reduce_prefix : stack -> prefx list -> ast -> ast
@@ -282,9 +287,9 @@ module FixityParser =
     let rec parse jux next =
         // parse_prefix : stack -> prefx list -> token list -> ast
         let rec parse_prefix st ps next =
-            match next() with
+            match next () with
             | None -> err "parse error" "expected more input"
-            | Some((pos, _, _, _) as chunk) -> parse_prefix' st ps chunk next
+            | Some ((pos, _, _, _) as chunk) -> parse_prefix' st ps chunk next
 
         and parse_prefix' st ps ch next =
             match ch with
@@ -294,7 +299,7 @@ module FixityParser =
             | (pos, None, None, None) -> errat "parse error" pos "not an operator"
 
         and parse_infix st ps e next =
-            match next() with
+            match next () with
             | None -> reduce_prefix st ps e
             | Some chunk ->
                 // If next token is an infix operator, then parse it as
@@ -305,19 +310,19 @@ module FixityParser =
             match (st, ps, ch) with
             | (NIL, [], (_: pos, _, _, Some i)) -> parse_prefix (FRAME(st, [], E, i)) [] next
             | (NIL, [], (_, _, _, None)) -> parse_prefix' (FRAME(st, [], E, jux)) [] ch next
-            | (FRAME(st', ps', E', ((pr', a', make') as i')), [], (pos, _, _, Some((pr, a, make) as i))) ->
+            | (FRAME (st', ps', E', ((pr', a', make') as i')), [], (pos, _, _, Some ((pr, a, make) as i))) ->
                 if prefer_left i' i
                 then parse_infix' st' ps' (make' (E', E)) ch next
                 else if prefer_right i' i
                 then parse_prefix (FRAME(st, [], E, i)) [] next
                 else errat "parse error" pos "precedence conflict"
-            | (FRAME(st', ps', E', ((pr', a', make') as i')), [], (pos, _, _, None)) ->
+            | (FRAME (st', ps', E', ((pr', a', make') as i')), [], (pos, _, _, None)) ->
                 if prefer_left i' jux
                 then parse_infix' st' ps' (make' (E', E)) ch next
                 else if prefer_right i' jux
                 then parse_prefix' (FRAME(st, [], E, jux)) [] ch next
                 else errat "parse error" pos "precedence conflict"
-            | (st, (pr', make') :: ps, (pos, _, _, Some((pr, a, make) as i))) ->
+            | (st, (pr', make') :: ps, (pos, _, _, Some ((pr, a, make) as i))) ->
                 if pr' > pr
                 then parse_infix' st ps (make' E) ch next
                 else if pr > pr'
@@ -333,15 +338,16 @@ module FixityParser =
 
         let parse_prefix_main st ps next =
             // Identical to parse_prefix, but adds position
-            match next() with
+            match next () with
             | None -> err "parse error" "expected more input"
-            | Some((pos, _, _, _) as chunk) -> parse_prefix' st ps chunk next
+            | Some ((pos, _, _, _) as chunk) -> parse_prefix' st ps chunk next
 
         parse_prefix_main NIL [] next
 
 // The parser of programs
 
-let private call ((p1, _), (_, _)) = errat "parse error" p1 "not a function call"
+let private call ((p1, _), (_, _)) =
+    errat "parse error" p1 "not a function call"
 //  function
 //    | ((p1, VAR f), (p2, TUP es))  -> (p1, CALL (f, es))
 //    | ((p1, VAR f), (p2, e2))      -> (p1, CALL (f, [e2]))
