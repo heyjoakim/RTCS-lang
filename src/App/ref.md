@@ -26,3 +26,12 @@ eval [] (OR (GT (INT 5, INT 10), (EQ (INT 5, INT 5))));;
 ## Assignments
 eval [] (LET ("x", INT 5, ADD (VAR "x", INT 42)));;
 eval [("x", 5)] (ADD (VAR "x", INT 42)));;
+
+## ParseEcp
+parseExpFromString "1+2";;
+
+# ParseProg
+parseProgFromString "func double(x) = x + x; double(7)";;                       
+
+## EvalProg
+evalProg (parseProgFromString "func double(x) = x + x; double(7)");;

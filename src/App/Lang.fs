@@ -43,3 +43,7 @@ let evalProg (funcs, e) =
             eval [ (x1, v1); (x2, v2) ] body
 
     eval [] e
+
+// Executions
+
+let main s = evalProg (parseProgFromString s)
