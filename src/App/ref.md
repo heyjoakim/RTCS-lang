@@ -87,3 +87,21 @@ compProg ([("f", ("x", ADD (VAR "x", INT 42))); ("g", ("y", CALL ("f", CALL ("f"
 // let c = comp env (ADD (VAR "a", INT 5));;
 // let st = [3; 1000000; 42];;
 // execProg c st;;
+
+let foo =
+    compProg
+        ([ ("foo", ([ "x"; "y"; "z" ], ADD(ADD(VAR "x", VAR "y"), VAR "z"))) ], CALL("foo", [ INT 10; INT 42; INT 11 ]))
+
+let foo2 =
+    "func foo(x,y,z) = (x + y) + z; foo(10,42,11)"
+
+evalProg (call)
+        // | CALL (f, [ e ]) ->
+        //     let v = eval env e
+        //     let ([ x ], body) = lookup f funcs
+        //     eval [ (x, v) ] body
+        // | CALL (f, [ e1; e2 ]) ->
+        //     let v1 = eval env e1
+        //     let v2 = eval env e2
+        //     let ([ x1; x2 ], body) = lookup f funcs
+        //     eval [ (x1, v1); (x2, v2) ] body

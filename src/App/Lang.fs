@@ -33,15 +33,6 @@ let evalProg (funcs, e) =
         | LET (x, e1, e2) ->
             let v1 = eval env e1
             eval ((x, v1) :: env) e2
-        // | CALL (f, [ e ]) ->
-        //     let v = eval env e
-        //     let ([ x ], body) = lookup f funcs
-        //     eval [ (x, v) ] body
-        // | CALL (f, [ e1; e2 ]) ->
-        //     let v1 = eval env e1
-        //     let v2 = eval env e2
-        //     let ([ x1; x2 ], body) = lookup f funcs
-        //     eval [ (x1, v1); (x2, v2) ] body
         | CALL (f, es) ->
             let rec map xs es =
                 match (xs, es) with
@@ -107,16 +98,47 @@ let rec comp fenv env =
         comp fenv env e1
         @ comp fenv ("" :: env) e2
         @ [ ISUB ]
-    | NEG (_) -> failwith "Not Implemented"
-    | MUL (_, _) -> failwith "Not Implemented"
-    | DIV (_, _) -> failwith "Not Implemented"
-    | NEQ (_, _) -> failwith "Not Implemented"
-    | LT (_, _) -> failwith "Not Implemented"
-    | LE (_, _) -> failwith "Not Implemented"
-    | GT (_, _) -> failwith "Not Implemented"
-    | GE (_, _) -> failwith "Not Implemented"
-    | AND (_, _) -> failwith "Not Implemented"
-    | OR (_, _) -> failwith "Not Implemented"
+    | MUL (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv (" " :: env) e2
+        @ [ IMUL ]
+    | DIV (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ IDIV ]
+    | NEG (e1) -> [ IPUSH 0 ] @ comp fenv ("" :: env) e1 @ [ ISUB ]
+    | NEQ (e1, e2) ->
+        [ IPUSH 1 ]
+        @ comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ IEQ ]
+        @ [ ISUB ]
+    | LE (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ ILE ]
+    | LT (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ ILT ]
+    | GT (e1, e2) ->
+        comp fenv env e2
+        @ comp fenv ("" :: env) e1
+        @ [ ILT ]
+    | GE (e1, e2) ->
+        comp fenv env e2
+        @ comp fenv ("" :: env) e1
+        @ [ ILE ]
+    | AND (e1, e2) ->
+        comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ IMUL ]
+    | OR (e1, e2) ->
+        [ IPUSH 0 ]
+        @ comp fenv env e1
+        @ comp fenv ("" :: env) e2
+        @ [ IADD ]
+        @ [ ILT ]
     | CALL (f, es) ->
         let rec bind es =
             match es with
@@ -132,6 +154,7 @@ let rec comp fenv env =
         @ [ IPOP ]
         @ [ ISWAP ]
         @ [ IPOP ]
+
 
 
 let compProg (funcs, e1) =
@@ -158,46 +181,41 @@ let compProg (funcs, e1) =
 
     compFuncs funcs
 
+let eval prog = // run to eval a program
+    evalProg prog
 
-// Executions
-let e1 = ([], SUB(INT 3, INT 2))
+let evalStr prog = // run to parse from a string and eval a program
+    evalProg (parseProgFromString prog)
 
-let e2 = "1+2"
+let exec prog = // run to compile and execute a program
+    execProg (compProg (prog)) []
 
-let f1 =
-    ([ ("f", ([ "x" ], ADD(VAR "x", INT 42))) ], CALL("f", [ INT 8 ]))
-
-
-
-let f2 = "func f(x) = x + 42; f(8)"
-
-let f3 = "func f(x,y) = x + 42 + y; f(8,4)"
-
-
-let foo =
-    ([ ("foo", ([ "x"; "y"; "z" ], ADD(ADD(VAR "x", VAR "y"), VAR "z"))) ], CALL("foo", [ INT 10; INT 42; INT 11 ]))
-
-let foo2 =
-    "func foo(x,y,z) = (x + y) + z; foo(10,42,11)"
-
-
-let f4 =
-    ([ ("f", ([ "x" ], ADD(VAR "x", INT 42)))
-       ("g", ([ "y" ], CALL("f", [ CALL("f", [ VAR "y" ]) ]))) ],
-     CALL("g", [ INT 5 ]))
-
-let f5 =
-    "func f(x) = x + 42; func g(y) = f(f(y)); g(5)"
-
-// Intepreter executions
-// evalProg prog
-let evalStr prog = evalProg (parseProgFromString prog)
-
-// Compiler executions
-let exec prog = execProg (compProg (prog)) []
-
-
-let execStr prog =
+let execStr prog = // run to parse from a string, compile and execute a program
     execProg (compProg (parseProgFromString (prog))) []
 
-// All is working besides the multiple args for the compiler (callArgsStr)
+let execFile prog = // run to parse from a string, compile and execute a program
+    execProg (compProg (parseProgFromFile (prog))) []
+
+// Example programs
+let foo = // Covers mult args, INT, DIV, ADD, VAR & CALL
+    ([ ("foo", ([ "x"; "y"; "z" ], DIV(ADD(VAR "x", VAR "y"), VAR "z"))) ], CALL("foo", [ INT 10; INT 42; INT 11 ]))
+
+let fooStr =
+    "func foo(x,y,z) = (x + y) / z; foo(10,42,11)"
+
+let bar = // Covers func as arg
+    ([ ("bar", ([ "x" ], ADD(VAR "x", INT 42)))
+       ("g", ([ "y" ], CALL("bar", [ CALL("bar", [ VAR "y" ]) ]))) ],
+     CALL("g", [ INT 5 ]))
+
+let barStr =
+    "func f(x) = x + 42; func g(y) = f(f(y)); g(5)"
+
+let cond = // Covers IF, EQ, OR, LE & NEG
+    "(if 3 == 4 || 2 <= 3 then 10 else 3)+(-10)"
+
+let cond2 = // Covers NEQ, AND & GE
+    "(if 3 != 3 && 2 >= 3 then 10 else 3)+(-10)"
+
+let assign = // Covers LET, SUB & MUL
+    "let x = 3 in x - 3 * 100"
