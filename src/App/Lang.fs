@@ -193,10 +193,10 @@ let exec prog = // run to compile and execute a program
 let execStr prog = // run to parse from a string, compile and execute a program
     execProg (compProg (parseProgFromString (prog))) []
 
-let execFile prog = // run to parse from a string, compile and execute a program
-    execProg (compProg (parseProgFromFile (prog))) []
 
 // Example programs
+// ** eg. eval foo;; evalStr fooStr;; exec foo;; execStr fooStr;;
+
 let foo = // Covers mult args, INT, DIV, ADD, VAR & CALL
     ([ ("foo", ([ "x"; "y"; "z" ], DIV(ADD(VAR "x", VAR "y"), VAR "z"))) ], CALL("foo", [ INT 10; INT 42; INT 11 ]))
 
