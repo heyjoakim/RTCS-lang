@@ -93,6 +93,18 @@ let rec comp fenv env =
         @ [ ILAB lr ]
         @ [ ISWAP ]
         @ [ IPOP ]
+    | SUB (_, _) -> failwith "Not Implemented"
+    | NEG (_) -> failwith "Not Implemented"
+    | MUL (_, _) -> failwith "Not Implemented"
+    | DIV (_, _) -> failwith "Not Implemented"
+    | NEQ (_, _) -> failwith "Not Implemented"
+    | LT (_, _) -> failwith "Not Implemented"
+    | LE (_, _) -> failwith "Not Implemented"
+    | GT (_, _) -> failwith "Not Implemented"
+    | GE (_, _) -> failwith "Not Implemented"
+    | AND (_, _) -> failwith "Not Implemented"
+    | OR (_, _) -> failwith "Not Implemented"
+
 
 let compProg (funcs, e1) =
     let fenv =
