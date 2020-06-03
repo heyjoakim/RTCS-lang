@@ -1,2 +1,2 @@
 # RTCS-lang
-Programming language made in F#
+(Small) Programming language made in F#
